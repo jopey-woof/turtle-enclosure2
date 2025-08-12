@@ -152,7 +152,7 @@ sudo systemctl enable docker
 print_status "Creating Docker configuration directory and required subdirectories..."
 
 # Check if /opt is writable, if not use home directory
-if sudo test -w /opt; then
+if sudo test -w /opt && sudo mkdir -p /opt/test-write 2>/dev/null && sudo rmdir /opt/test-write 2>/dev/null; then
     BASE_DIR="/opt/turtle-enclosure"
     print_status "Using /opt/turtle-enclosure for installation"
 else
