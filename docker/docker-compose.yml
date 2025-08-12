@@ -15,7 +15,7 @@ services:
       - /dev/ttyACM0:/dev/ttyACM0  # Zigbee dongle
       - /dev/video0:/dev/video0    # Camera
     environment:
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
     depends_on:
       - mosquitto
       - influxdb
@@ -33,7 +33,7 @@ services:
       - /opt/turtle-enclosure/config/mosquitto/data:/mosquitto/data
       - /opt/turtle-enclosure/config/mosquitto/log:/mosquitto/log
     environment:
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
 
   # Zigbee2MQTT
   zigbee2mqtt:
@@ -47,7 +47,7 @@ services:
       - /opt/turtle-enclosure/config/zigbee2mqtt:/app/data
       - /dev/ttyACM0:/dev/ttyACM0
     environment:
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
     depends_on:
       - mosquitto
 
@@ -67,7 +67,7 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=turtle-enclosure
       - DOCKER_INFLUXDB_INIT_BUCKET=turtle_data
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=turtle-token-123
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
 
   # Grafana for data visualization
   grafana:
@@ -82,7 +82,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=turtle123
       - GF_USERS_ALLOW_SIGN_UP=false
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
     depends_on:
       - influxdb
 
@@ -96,7 +96,7 @@ services:
     volumes:
       - /opt/turtle-enclosure/config/nodered:/data
     environment:
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
     depends_on:
       - mosquitto
 
@@ -112,7 +112,7 @@ services:
       - /opt/turtle-enclosure/config/motion:/etc/motion
       - /dev/video0:/dev/video0
     environment:
-      - TZ=America/New_York
+      - TZ=America/Los_Angeles
 
 networks:
   default:
