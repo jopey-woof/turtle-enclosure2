@@ -1,0 +1,55 @@
+# Turtle Enclosure System - Git Ignore
+
+# Sensitive configuration files
+config/homeassistant/secrets.yaml
+config/mosquitto/passwd
+config/zigbee2mqtt/configuration.yaml
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+backups/
+*.tar.gz
+*.zip
+
+# Docker volumes
+docker/volumes/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Node modules (if any)
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Certificate files
+*.pem
+*.key
+*.crt
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3 
