@@ -245,7 +245,7 @@ sudo chmod +x /opt/turtle-enclosure/scripts/kiosk-recovery.sh
 sudo chown turtle:turtle /opt/turtle-enclosure/scripts/kiosk-recovery.sh
 
 # Add kiosk recovery to crontab (every 2 minutes)
-(crontab -u turtle -l 2>/dev/null; echo "*/2 * * * * /opt/turtle-enclosure/scripts/kiosk-recovery.sh") | crontab -u turtle -
+sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "*/2 * * * * /opt/turtle-enclosure/scripts/kiosk-recovery.sh") | crontab -'
 
 # Create VNC configuration for remote access
 print_status "Configuring VNC for remote access..."

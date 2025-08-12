@@ -230,7 +230,7 @@ sudo chmod +x /opt/turtle-enclosure/scripts/docker-maintenance.sh
 sudo chown turtle:turtle /opt/turtle-enclosure/scripts/docker-maintenance.sh
 
 # Add Docker maintenance to crontab (weekly)
-(crontab -u turtle -l 2>/dev/null; echo "0 3 * * 0 /opt/turtle-enclosure/scripts/docker-maintenance.sh") | crontab -u turtle -
+sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "0 3 * * 0 /opt/turtle-enclosure/scripts/docker-maintenance.sh") | crontab -'
 
 # Create Docker health check script
 print_status "Creating Docker health check script..."
@@ -274,7 +274,7 @@ sudo chmod +x /opt/turtle-enclosure/scripts/docker-health.sh
 sudo chown turtle:turtle /opt/turtle-enclosure/scripts/docker-health.sh
 
 # Add Docker health check to crontab (every 5 minutes)
-(crontab -u turtle -l 2>/dev/null; echo "*/5 * * * * /opt/turtle-enclosure/scripts/docker-health.sh") | crontab -u turtle -
+sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "*/5 * * * * /opt/turtle-enclosure/scripts/docker-health.sh") | crontab -'
 
 # Test Docker installation
 print_status "Testing Docker installation..."

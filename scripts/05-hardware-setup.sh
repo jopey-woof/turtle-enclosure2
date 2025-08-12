@@ -422,7 +422,7 @@ EOF
     sudo chown turtle:turtle /opt/turtle-enclosure/scripts/usb-hub-manager.sh
     
     # Add USB monitoring to crontab
-    (crontab -u turtle -l 2>/dev/null; echo "*/2 * * * * /opt/turtle-enclosure/scripts/usb-hub-manager.sh check") | crontab -u turtle -
+sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "*/2 * * * * /opt/turtle-enclosure/scripts/usb-hub-manager.sh check") | crontab -'
     
     print_success "USB hub management configured"
 }
