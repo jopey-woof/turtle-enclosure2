@@ -148,31 +148,57 @@ sudo systemctl enable docker
 
 # Create Docker configuration directory and all required subdirectories
 print_status "Creating Docker configuration directory and required subdirectories..."
-sudo mkdir -p /opt/turtle-enclosure/docker
-sudo mkdir -p /opt/turtle-enclosure/config/homeassistant
-sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/data
-sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/log
-sudo mkdir -p /opt/turtle-enclosure/config/zigbee2mqtt
-sudo mkdir -p /opt/turtle-enclosure/config/influxdb
-sudo mkdir -p /opt/turtle-enclosure/config/grafana
-sudo mkdir -p /opt/turtle-enclosure/config/nodered
-sudo mkdir -p /opt/turtle-enclosure/config/motion
-sudo mkdir -p /opt/turtle-enclosure/logs
-sudo chown -R turtle:turtle /opt/turtle-enclosure
-sudo chmod -R 755 /opt/turtle-enclosure
+
+# Check if /opt is writable, if not use home directory
+if sudo test -w /opt; then
+    BASE_DIR="/opt/turtle-enclosure"
+    print_status "Using /opt/turtle-enclosure for installation"
+else
+    BASE_DIR="/home/turtle/turtle-enclosure"
+    print_status "Using /home/turtle/turtle-enclosure for installation (read-only filesystem detected)"
+fi
+
+# Create all required directories
+sudo mkdir -p "$BASE_DIR/docker"
+sudo mkdir -p "$BASE_DIR/config/homeassistant"
+sudo mkdir -p "$BASE_DIR/config/mosquitto/data"
+sudo mkdir -p "$BASE_DIR/config/mosquitto/log"
+sudo mkdir -p "$BASE_DIR/config/zigbee2mqtt"
+sudo mkdir -p "$BASE_DIR/config/influxdb"
+sudo mkdir -p "$BASE_DIR/config/grafana"
+sudo mkdir -p "$BASE_DIR/config/nodered"
+sudo mkdir -p "$BASE_DIR/config/motion"
+sudo mkdir -p "$BASE_DIR/logs"
+sudo chown -R turtle:turtle "$BASE_DIR"
+sudo chmod -R 755 "$BASE_DIR"
+
+# Store the base directory for later use
+echo "$BASE_DIR" > /tmp/turtle-enclosure-base-dir
 
 # Copy Docker Compose file
 print_status "Setting up Docker Compose configuration..."
 if [ -f "docker/docker-compose.yml" ]; then
-    sudo cp docker/docker-compose.yml /opt/turtle-enclosure/docker/
-    sudo chown turtle:turtle /opt/turtle-enclosure/docker/docker-compose.yml
-    print_success "Docker Compose file copied"
+    # Read the base directory
+    BASE_DIR=$(cat /tmp/turtle-enclosure-base-dir)
+    
+    # Copy and update the docker-compose file with the correct paths
+    sudo cp docker/docker-compose.yml "$BASE_DIR/docker/"
+    sudo chown turtle:turtle "$BASE_DIR/docker/docker-compose.yml"
+    
+    # Update paths in docker-compose file if using home directory
+    if [ "$BASE_DIR" != "/opt/turtle-enclosure" ]; then
+        sudo sed -i "s|/opt/turtle-enclosure|$BASE_DIR|g" "$BASE_DIR/docker/docker-compose.yml"
+        print_status "Updated docker-compose.yml paths to use $BASE_DIR"
+    fi
+    
+    print_success "Docker Compose file copied to $BASE_DIR/docker/"
 else
     print_warning "Docker Compose file not found, will be created in next step"
 fi
 
 # Create Docker service for auto-start
 print_status "Creating Docker auto-start service..."
+BASE_DIR=$(cat /tmp/turtle-enclosure-base-dir)
 sudo tee /etc/systemd/system/turtle-docker.service > /dev/null <<EOF
 [Unit]
 Description=Turtle Enclosure Docker Services
@@ -182,7 +208,7 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/turtle-enclosure/docker
+WorkingDirectory=$BASE_DIR/docker
 ExecStart=/usr/bin/docker-compose up -d
 ExecStop=/usr/bin/docker-compose down
 User=turtle

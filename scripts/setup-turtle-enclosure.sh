@@ -152,24 +152,49 @@ echo "==========================================="
 
 # Ensure all required directories exist
 print_status "Creating required directories..."
-sudo mkdir -p /opt/turtle-enclosure/docker
-sudo mkdir -p /opt/turtle-enclosure/config/homeassistant
-sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/data
-sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/log
-sudo mkdir -p /opt/turtle-enclosure/config/zigbee2mqtt
-sudo mkdir -p /opt/turtle-enclosure/config/influxdb
-sudo mkdir -p /opt/turtle-enclosure/config/grafana
-sudo mkdir -p /opt/turtle-enclosure/config/nodered
-sudo mkdir -p /opt/turtle-enclosure/config/motion
-sudo mkdir -p /opt/turtle-enclosure/logs
-sudo chown -R turtle:turtle /opt/turtle-enclosure
-sudo chmod -R 755 /opt/turtle-enclosure
+
+# Check if /opt is writable, if not use home directory
+if sudo test -w /opt; then
+    BASE_DIR="/opt/turtle-enclosure"
+    print_status "Using /opt/turtle-enclosure for installation"
+else
+    BASE_DIR="/home/turtle/turtle-enclosure"
+    print_status "Using /home/turtle/turtle-enclosure for installation (read-only filesystem detected)"
+fi
+
+# Create all required directories
+sudo mkdir -p "$BASE_DIR/docker"
+sudo mkdir -p "$BASE_DIR/config/homeassistant"
+sudo mkdir -p "$BASE_DIR/config/mosquitto/data"
+sudo mkdir -p "$BASE_DIR/config/mosquitto/log"
+sudo mkdir -p "$BASE_DIR/config/zigbee2mqtt"
+sudo mkdir -p "$BASE_DIR/config/influxdb"
+sudo mkdir -p "$BASE_DIR/config/grafana"
+sudo mkdir -p "$BASE_DIR/config/nodered"
+sudo mkdir -p "$BASE_DIR/config/motion"
+sudo mkdir -p "$BASE_DIR/logs"
+sudo chown -R turtle:turtle "$BASE_DIR"
+sudo chmod -R 755 "$BASE_DIR"
+
+# Store the base directory for later use
+echo "$BASE_DIR" > /tmp/turtle-enclosure-base-dir
 
 # Copy Docker Compose file
 if [ -f "docker/docker-compose.yml" ]; then
-    sudo cp docker/docker-compose.yml /opt/turtle-enclosure/docker/
-    sudo chown turtle:turtle /opt/turtle-enclosure/docker/docker-compose.yml
-    print_success "Docker Compose file copied"
+    # Read the base directory
+    BASE_DIR=$(cat /tmp/turtle-enclosure-base-dir)
+    
+    # Copy and update the docker-compose file with the correct paths
+    sudo cp docker/docker-compose.yml "$BASE_DIR/docker/"
+    sudo chown turtle:turtle "$BASE_DIR/docker/docker-compose.yml"
+    
+    # Update paths in docker-compose file if using home directory
+    if [ "$BASE_DIR" != "/opt/turtle-enclosure" ]; then
+        sudo sed -i "s|/opt/turtle-enclosure|$BASE_DIR|g" "$BASE_DIR/docker/docker-compose.yml"
+        print_status "Updated docker-compose.yml paths to use $BASE_DIR"
+    fi
+    
+    print_success "Docker Compose file copied to $BASE_DIR/docker/"
 else
     print_error "Docker Compose file not found"
     exit 1
@@ -188,7 +213,8 @@ echo "==================================="
 
 # Create system information file
 print_status "Creating system information..."
-sudo tee /opt/turtle-enclosure/system-info.txt > /dev/null <<EOF
+BASE_DIR=$(cat /tmp/turtle-enclosure-base-dir)
+sudo tee "$BASE_DIR/system-info.txt" > /dev/null <<EOF
 Turtle Enclosure System Information
 ==================================
 Installation Date: $(date)
@@ -223,11 +249,11 @@ Support:
 - Backups: /opt/turtle-enclosure/backups/
 EOF
 
-sudo chown turtle:turtle /opt/turtle-enclosure/system-info.txt
+sudo chown turtle:turtle "$BASE_DIR/system-info.txt"
 
 # Create quick start guide
 print_status "Creating quick start guide..."
-sudo tee /opt/turtle-enclosure/QUICK_START.md > /dev/null <<'EOF'
+sudo tee "$BASE_DIR/QUICK_START.md" > /dev/null <<'EOF'
 # Turtle Enclosure Quick Start Guide
 
 ## 🚀 Getting Started
@@ -295,12 +321,12 @@ The touchscreen will automatically display the turtle enclosure dashboard.
 Happy turtle parenting! 🐢💚
 EOF
 
-sudo chown turtle:turtle /opt/turtle-enclosure/QUICK_START.md
+sudo chown turtle:turtle "$BASE_DIR/QUICK_START.md"
 
 # Set final permissions
 print_status "Setting final permissions..."
-sudo chown -R turtle:turtle /opt/turtle-enclosure
-sudo chmod -R 755 /opt/turtle-enclosure
+sudo chown -R turtle:turtle "$BASE_DIR"
+sudo chmod -R 755 "$BASE_DIR"
 
 # Create desktop shortcut
 print_status "Creating desktop shortcuts..."
@@ -327,7 +353,7 @@ echo
 print_status "System Information:"
 echo "======================"
 echo "Installation Date: $(date)"
-echo "System Location: /opt/turtle-enclosure"
+echo "System Location: $BASE_DIR"
 echo "Home Assistant: http://localhost:8123"
 echo "Grafana: http://localhost:3000"
 echo "Node-RED: http://localhost:1880"
@@ -342,8 +368,8 @@ echo "5. Configure your turtle enclosure settings"
 echo
 print_status "Documentation:"
 echo "================"
-echo "Quick Start: /opt/turtle-enclosure/QUICK_START.md"
-echo "System Info: /opt/turtle-enclosure/system-info.txt"
+echo "Quick Start: $BASE_DIR/QUICK_START.md"
+echo "System Info: $BASE_DIR/system-info.txt"
 echo "Installation Log: $LOG_FILE"
 echo
 print_warning "Important Notes:"
