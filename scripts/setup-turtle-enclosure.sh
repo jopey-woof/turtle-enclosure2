@@ -153,7 +153,18 @@ echo "==========================================="
 # Ensure all required directories exist
 print_status "Creating required directories..."
 
+# Check if turtle user exists, create if not
+if ! id "turtle" &>/dev/null; then
+    print_status "Creating turtle user..."
+    sudo useradd -m -s /bin/bash turtle
+    sudo usermod -aG docker turtle
+    print_success "Turtle user created"
+else
+    print_status "Turtle user already exists"
+fi
+
 # Check if /opt is writable, if not use home directory
+print_status "Checking filesystem permissions..."
 if sudo test -w /opt && sudo mkdir -p /opt/test-write 2>/dev/null && sudo rmdir /opt/test-write 2>/dev/null; then
     BASE_DIR="/opt/turtle-enclosure"
     print_status "Using /opt/turtle-enclosure for installation"
@@ -162,7 +173,10 @@ else
     print_status "Using /home/turtle/turtle-enclosure for installation (read-only filesystem detected)"
 fi
 
+print_status "BASE_DIR set to: $BASE_DIR"
+
 # Create all required directories
+print_status "Creating directory structure..."
 sudo mkdir -p "$BASE_DIR/docker"
 sudo mkdir -p "$BASE_DIR/config/homeassistant"
 sudo mkdir -p "$BASE_DIR/config/mosquitto/data"
@@ -175,6 +189,9 @@ sudo mkdir -p "$BASE_DIR/config/motion"
 sudo mkdir -p "$BASE_DIR/logs"
 sudo chown -R turtle:turtle "$BASE_DIR"
 sudo chmod -R 755 "$BASE_DIR"
+
+print_status "Directory structure created at: $BASE_DIR"
+ls -la "$BASE_DIR" || print_warning "Could not list directory contents"
 
 # Store the base directory for later use
 echo "$BASE_DIR" > /tmp/turtle-enclosure-base-dir
@@ -347,9 +364,21 @@ sudo chmod +x /home/turtle/Desktop/Turtle\ Enclosure.desktop
 print_status "Starting Docker containers..."
 print_status "Using base directory: $BASE_DIR"
 print_status "Docker Compose file: $BASE_DIR/docker/docker-compose.yml"
+print_status "Current user: $(whoami)"
+print_status "Turtle user exists: $(id turtle 2>/dev/null && echo "Yes" || echo "No")"
+print_status "Directory exists: $(test -d "$BASE_DIR" && echo "Yes" || echo "No")"
+print_status "Docker Compose file exists: $(test -f "$BASE_DIR/docker/docker-compose.yml" && echo "Yes" || echo "No")"
+
 cd "$BASE_DIR/docker"
 export BASE_DIR="$BASE_DIR"
-if sudo -E docker compose up -d; then
+print_status "Environment variable BASE_DIR: $BASE_DIR"
+print_status "Working directory: $(pwd)"
+
+# Show the actual paths that Docker will use
+print_status "Docker Compose file contents (paths):"
+grep -E "BASE_DIR|/opt/turtle-enclosure" docker-compose.yml || print_warning "No path references found"
+
+if sudo -E docker-compose up -d; then
     print_success "Docker containers started successfully"
     
     # Wait for Home Assistant to be ready
@@ -368,7 +397,7 @@ if sudo -E docker compose up -d; then
     done
 else
     print_error "Failed to start Docker containers"
-    print_status "You can try starting them manually with: cd $BASE_DIR/docker && export BASE_DIR=$BASE_DIR && sudo -E docker compose up -d"
+    print_status "You can try starting them manually with: cd $BASE_DIR/docker && export BASE_DIR=$BASE_DIR && sudo -E docker-compose up -d"
 fi
 
 # Installation complete
