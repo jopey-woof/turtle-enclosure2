@@ -298,15 +298,15 @@ The touchscreen will automatically display the turtle enclosure dashboard.
 
 ## 🔧 Troubleshooting
 
-- **System won't start**: Check logs at `/opt/turtle-enclosure/logs/`
+- **System won't start**: Check logs at `$BASE_DIR/logs/`
 - **Hardware not detected**: Run `lsusb` and `ls /dev/video*`
 - **Touchscreen not working**: Calibrate with `xinput_calibrator`
-- **Docker issues**: Run `docker-compose logs` in `/opt/turtle-enclosure/docker/`
+- **Docker issues**: Run `docker-compose logs` in `$BASE_DIR/docker/`
 
 ## 📞 Support
 
-- Check system info: `cat /opt/turtle-enclosure/system-info.txt`
-- View logs: `tail -f /opt/turtle-enclosure/logs/*.log`
+- Check system info: `cat $BASE_DIR/system-info.txt`
+- View logs: `tail -f $BASE_DIR/logs/*.log`
 - Restart services: `sudo systemctl restart turtle-*`
 
 ## 🐢 Turtle Care Tips
@@ -346,6 +346,31 @@ EOF
 sudo chown turtle:turtle /home/turtle/Desktop/Turtle\ Enclosure.desktop
 sudo chmod +x /home/turtle/Desktop/Turtle\ Enclosure.desktop
 
+# Start Docker containers
+print_status "Starting Docker containers..."
+cd "$BASE_DIR/docker"
+if sudo docker compose up -d; then
+    print_success "Docker containers started successfully"
+    
+    # Wait for Home Assistant to be ready
+    print_status "Waiting for Home Assistant to start..."
+    sleep 30
+    
+    # Check if Home Assistant is responding
+    print_status "Checking if Home Assistant is ready..."
+    for i in {1..30}; do
+        if curl -s http://localhost:8123 > /dev/null; then
+            print_success "Home Assistant is ready!"
+            break
+        fi
+        print_status "Waiting for Home Assistant... ($i/30)"
+        sleep 10
+    done
+else
+    print_error "Failed to start Docker containers"
+    print_status "You can try starting them manually with: cd $BASE_DIR/docker && sudo docker compose up -d"
+fi
+
 # Installation complete
 echo
 print_success "🎉 Turtle Enclosure Installation Complete!"
@@ -379,4 +404,11 @@ echo "- Configure your location in configuration.yaml"
 echo "- Test all hardware connections"
 echo "- Set up mobile app notifications"
 echo
+# Start kiosk services
+print_status "Starting kiosk services..."
+sudo systemctl start turtle-display.service 2>/dev/null || print_warning "Display service not found"
+sudo systemctl start turtle-kiosk.service 2>/dev/null || print_warning "Kiosk service not found"
+sudo systemctl enable turtle-display.service 2>/dev/null || print_warning "Display service not found"
+sudo systemctl enable turtle-kiosk.service 2>/dev/null || print_warning "Kiosk service not found"
+
 print_success "Your turtle enclosure automation system is ready! 🐢" 
