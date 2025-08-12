@@ -59,6 +59,8 @@ sudo apt install -y \
 
 # Add Docker's official GPG key
 print_status "Adding Docker GPG key..."
+# Remove existing key if it exists to avoid prompt
+sudo rm -f /usr/share/keyrings/docker-archive-keyring.gpg
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
 # Add Docker repository
