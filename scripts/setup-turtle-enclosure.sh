@@ -150,6 +150,21 @@ echo
 print_status "Step 4/5: Copying Configuration Files"
 echo "==========================================="
 
+# Ensure all required directories exist
+print_status "Creating required directories..."
+sudo mkdir -p /opt/turtle-enclosure/docker
+sudo mkdir -p /opt/turtle-enclosure/config/homeassistant
+sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/data
+sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/log
+sudo mkdir -p /opt/turtle-enclosure/config/zigbee2mqtt
+sudo mkdir -p /opt/turtle-enclosure/config/influxdb
+sudo mkdir -p /opt/turtle-enclosure/config/grafana
+sudo mkdir -p /opt/turtle-enclosure/config/nodered
+sudo mkdir -p /opt/turtle-enclosure/config/motion
+sudo mkdir -p /opt/turtle-enclosure/logs
+sudo chown -R turtle:turtle /opt/turtle-enclosure
+sudo chmod -R 755 /opt/turtle-enclosure
+
 # Copy Docker Compose file
 if [ -f "docker/docker-compose.yml" ]; then
     sudo cp docker/docker-compose.yml /opt/turtle-enclosure/docker/

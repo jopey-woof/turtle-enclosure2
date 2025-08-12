@@ -146,10 +146,20 @@ docker network create turtle-network 2>/dev/null || print_warning "Network alrea
 print_status "Configuring Docker restart policy..."
 sudo systemctl enable docker
 
-# Create Docker configuration directory
-print_status "Creating Docker configuration directory..."
+# Create Docker configuration directory and all required subdirectories
+print_status "Creating Docker configuration directory and required subdirectories..."
 sudo mkdir -p /opt/turtle-enclosure/docker
-sudo chown -R turtle:turtle /opt/turtle-enclosure/docker
+sudo mkdir -p /opt/turtle-enclosure/config/homeassistant
+sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/data
+sudo mkdir -p /opt/turtle-enclosure/config/mosquitto/log
+sudo mkdir -p /opt/turtle-enclosure/config/zigbee2mqtt
+sudo mkdir -p /opt/turtle-enclosure/config/influxdb
+sudo mkdir -p /opt/turtle-enclosure/config/grafana
+sudo mkdir -p /opt/turtle-enclosure/config/nodered
+sudo mkdir -p /opt/turtle-enclosure/config/motion
+sudo mkdir -p /opt/turtle-enclosure/logs
+sudo chown -R turtle:turtle /opt/turtle-enclosure
+sudo chmod -R 755 /opt/turtle-enclosure
 
 # Copy Docker Compose file
 print_status "Setting up Docker Compose configuration..."
