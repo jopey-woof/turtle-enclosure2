@@ -92,11 +92,36 @@ sudo systemctl enable docker
 
 # Install Docker Compose (standalone version for compatibility)
 print_status "Installing Docker Compose..."
+
+# Remove existing docker-compose if it exists
+sudo rm -f /usr/local/bin/docker-compose
+sudo rm -f /usr/bin/docker-compose
+
+# Download and install docker-compose
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Create symbolic link
 sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+# Verify installation
+if [ -f "/usr/local/bin/docker-compose" ]; then
+    print_success "Docker Compose installed successfully"
+else
+    print_error "Docker Compose installation failed"
+    print_status "Trying alternative installation method..."
+    
+    # Try installing via pip as fallback
+    sudo apt install -y python3-pip
+    sudo pip3 install docker-compose
+    
+    if command -v docker-compose > /dev/null; then
+        print_success "Docker Compose installed via pip"
+    else
+        print_error "Docker Compose installation failed completely"
+        exit 1
+    fi
+fi
 
 # Verify Docker installation
 print_status "Verifying Docker installation..."
