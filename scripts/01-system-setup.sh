@@ -249,7 +249,7 @@ sudo chmod +x /opt/turtle-enclosure/scripts/monitor-system.sh
 sudo chown turtle:turtle /opt/turtle-enclosure/scripts/monitor-system.sh
 
 # Add system monitoring to crontab (every 5 minutes)
-(crontab -u turtle -l 2>/dev/null; echo "*/5 * * * * /opt/turtle-enclosure/scripts/monitor-system.sh") | crontab -u turtle -
+sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "*/5 * * * * /opt/turtle-enclosure/scripts/monitor-system.sh") | crontab -'
 
 # Create backup script
 print_status "Setting up backup system..."
@@ -279,7 +279,7 @@ sudo chmod +x /opt/turtle-enclosure/scripts/backup-config.sh
 sudo chown turtle:turtle /opt/turtle-enclosure/scripts/backup-config.sh
 
 # Add daily backup to crontab
-(crontab -u turtle -l 2>/dev/null; echo "0 2 * * * /opt/turtle-enclosure/scripts/backup-config.sh") | crontab -u turtle -
+sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "0 2 * * * /opt/turtle-enclosure/scripts/backup-config.sh") | crontab -'
 
 # Set final permissions
 print_status "Setting final permissions..."
