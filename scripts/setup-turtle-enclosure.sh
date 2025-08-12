@@ -289,6 +289,7 @@ sudo chmod -R 755 /opt/turtle-enclosure
 
 # Create desktop shortcut
 print_status "Creating desktop shortcuts..."
+sudo mkdir -p /home/turtle/Desktop
 sudo tee /home/turtle/Desktop/Turtle\ Enclosure.desktop > /dev/null <<EOF
 [Desktop Entry]
 Version=1.0
