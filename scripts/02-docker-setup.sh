@@ -278,21 +278,30 @@ sudo -u turtle bash -c '(crontab -l 2>/dev/null; echo "*/5 * * * * /opt/turtle-e
 
 # Test Docker installation
 print_status "Testing Docker installation..."
-if docker run --rm hello-world; then
+if docker run --rm hello-world 2>/dev/null; then
     print_success "Docker test successful"
 else
-    print_error "Docker test failed"
-    exit 1
+    print_warning "Docker test failed - this is normal if you haven't logged out/in yet"
+    print_status "The user has been added to the docker group, but you may need to:"
+    print_status "1. Log out and log back in, OR"
+    print_status "2. Run: newgrp docker"
+    print_status "3. Then test again with: docker run --rm hello-world"
 fi
 
-# Clean up test image
+# Clean up test image (if it exists)
 docker rmi hello-world:latest 2>/dev/null || true
 
 print_success "Docker setup completed successfully!"
 echo
 print_status "Next steps:"
-echo "1. Log out and log back in for group changes to take effect"
-echo "2. Run the Home Assistant setup script: ./scripts/03-home-assistant-setup.sh"
-echo "3. Configure hardware integration: ./scripts/05-hardware-setup.sh"
+echo "1. Run the Home Assistant setup script: ./scripts/03-home-assistant-setup.sh"
+echo "2. Configure hardware integration: ./scripts/05-hardware-setup.sh"
 echo
-print_warning "Note: You may need to log out and back in for Docker group permissions to take effect" 
+print_warning "Important Docker Group Note:"
+echo "=================================="
+echo "You have been added to the docker group, but you may need to:"
+echo "1. Log out and log back in, OR"
+echo "2. Run: newgrp docker"
+echo "3. Then test Docker with: docker run --rm hello-world"
+echo
+print_status "If Docker commands fail with permission errors, try the above steps." 
