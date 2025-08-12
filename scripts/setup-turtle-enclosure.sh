@@ -188,21 +188,8 @@ if [ -f "docker/docker-compose.yml" ]; then
     sudo cp docker/docker-compose.yml "$BASE_DIR/docker/"
     sudo chown turtle:turtle "$BASE_DIR/docker/docker-compose.yml"
     
-    # Update paths in docker-compose file if using home directory
-    if [ "$BASE_DIR" != "/opt/turtle-enclosure" ]; then
-        sudo sed -i "s|/opt/turtle-enclosure|$BASE_DIR|g" "$BASE_DIR/docker/docker-compose.yml"
-        print_status "Updated docker-compose.yml paths to use $BASE_DIR"
-    else
-        print_status "Using default /opt/turtle-enclosure paths"
-    fi
-    
-    # Verify the paths in the docker-compose file
-    print_status "Verifying Docker Compose paths..."
-    if grep -q "$BASE_DIR" "$BASE_DIR/docker/docker-compose.yml"; then
-        print_success "Docker Compose file paths verified"
-    else
-        print_warning "Docker Compose file may still contain /opt/turtle-enclosure paths"
-    fi
+    # Docker Compose now uses environment variables for paths
+    print_status "Docker Compose file uses environment variables for flexible paths"
     
     print_success "Docker Compose file copied to $BASE_DIR/docker/"
 else
@@ -361,7 +348,8 @@ print_status "Starting Docker containers..."
 print_status "Using base directory: $BASE_DIR"
 print_status "Docker Compose file: $BASE_DIR/docker/docker-compose.yml"
 cd "$BASE_DIR/docker"
-if sudo docker compose up -d; then
+export BASE_DIR="$BASE_DIR"
+if sudo -E docker compose up -d; then
     print_success "Docker containers started successfully"
     
     # Wait for Home Assistant to be ready
@@ -380,7 +368,7 @@ if sudo docker compose up -d; then
     done
 else
     print_error "Failed to start Docker containers"
-    print_status "You can try starting them manually with: cd $BASE_DIR/docker && sudo docker compose up -d"
+    print_status "You can try starting them manually with: cd $BASE_DIR/docker && export BASE_DIR=$BASE_DIR && sudo -E docker compose up -d"
 fi
 
 # Installation complete
