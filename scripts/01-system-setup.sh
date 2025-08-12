@@ -152,6 +152,7 @@ sudo mkdir -p /etc/systemd/system
 
 # Configure systemd journal settings
 print_status "Configuring systemd journal settings..."
+sudo mkdir -p /etc/systemd/journald.conf.d
 sudo tee /etc/systemd/journald.conf.d/turtle-enclosure.conf > /dev/null <<EOF
 # Turtle Enclosure Journal Settings
 [Journal]
