@@ -3,15 +3,23 @@
 # Start Home Assistant and related services for turtle enclosure
 echo "🐢 Starting Turtle Enclosure Home Assistant..."
 
+# Get the base directory from the setup script
+if [ -f "/tmp/turtle-enclosure-base-dir" ]; then
+    BASE_DIR=$(cat /tmp/turtle-enclosure-base-dir)
+else
+    # Fallback to default location
+    BASE_DIR="/opt/turtle-enclosure"
+fi
+
 # Check if we're in the right directory
-if [ ! -d "/opt/turtle-enclosure" ]; then
-    echo "Error: Turtle enclosure system not found at /opt/turtle-enclosure"
+if [ ! -d "$BASE_DIR" ]; then
+    echo "Error: Turtle enclosure system not found at $BASE_DIR"
     echo "Please run the setup scripts first: ./scripts/setup-turtle-enclosure.sh"
     exit 1
 fi
 
 # Navigate to the docker directory
-cd /opt/turtle-enclosure/docker
+cd "$BASE_DIR/docker"
 
 # Check if docker-compose.yml exists
 if [ ! -f "docker-compose.yml" ]; then
