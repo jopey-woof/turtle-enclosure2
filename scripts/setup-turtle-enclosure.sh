@@ -192,6 +192,16 @@ if [ -f "docker/docker-compose.yml" ]; then
     if [ "$BASE_DIR" != "/opt/turtle-enclosure" ]; then
         sudo sed -i "s|/opt/turtle-enclosure|$BASE_DIR|g" "$BASE_DIR/docker/docker-compose.yml"
         print_status "Updated docker-compose.yml paths to use $BASE_DIR"
+    else
+        print_status "Using default /opt/turtle-enclosure paths"
+    fi
+    
+    # Verify the paths in the docker-compose file
+    print_status "Verifying Docker Compose paths..."
+    if grep -q "$BASE_DIR" "$BASE_DIR/docker/docker-compose.yml"; then
+        print_success "Docker Compose file paths verified"
+    else
+        print_warning "Docker Compose file may still contain /opt/turtle-enclosure paths"
     fi
     
     print_success "Docker Compose file copied to $BASE_DIR/docker/"
@@ -201,9 +211,9 @@ else
 fi
 
 # Copy scripts
-sudo cp -r scripts/* /opt/turtle-enclosure/scripts/
-sudo chown -R turtle:turtle /opt/turtle-enclosure/scripts/
-sudo chmod +x /opt/turtle-enclosure/scripts/*.sh
+sudo cp -r scripts/* "$BASE_DIR/scripts/"
+sudo chown -R turtle:turtle "$BASE_DIR/scripts/"
+sudo chmod +x "$BASE_DIR/scripts/"*.sh
 print_success "Scripts copied"
 
 # Step 5: Final Configuration
@@ -244,9 +254,9 @@ Next Steps:
 5. Test the touchscreen interface
 
 Support:
-- Logs: /opt/turtle-enclosure/logs/
-- Config: /opt/turtle-enclosure/config/
-- Backups: /opt/turtle-enclosure/backups/
+- Logs: $BASE_DIR/logs/
+- Config: $BASE_DIR/config/
+- Backups: $BASE_DIR/backups/
 EOF
 
 sudo chown turtle:turtle "$BASE_DIR/system-info.txt"
@@ -348,6 +358,8 @@ sudo chmod +x /home/turtle/Desktop/Turtle\ Enclosure.desktop
 
 # Start Docker containers
 print_status "Starting Docker containers..."
+print_status "Using base directory: $BASE_DIR"
+print_status "Docker Compose file: $BASE_DIR/docker/docker-compose.yml"
 cd "$BASE_DIR/docker"
 if sudo docker compose up -d; then
     print_success "Docker containers started successfully"
